@@ -699,6 +699,7 @@ Okular::Document::OpenResult PDFGenerator::init(QVector<Okular::Page *> &pagesVe
 
     if (pdfdoc->isLocked()) {
         pdfdoc->unlock(password.toLatin1(), password.toLatin1());
+        documentHasPassword = !password.isEmpty();
 
         if (pdfdoc->isLocked()) {
             pdfdoc->unlock(password.toUtf8(), password.toUtf8());
@@ -708,6 +709,8 @@ Okular::Document::OpenResult PDFGenerator::init(QVector<Okular::Page *> &pagesVe
                 return Okular::Document::OpenNeedsPassword;
             }
         }
+    } else {
+        documentHasPassword = false;
     }
 
     xrefReconstructed = false;
@@ -1581,7 +1584,7 @@ QVariant PDFGenerator::metaData(const QString &key, const QVariant &option) cons
             return i18n("Using Poppler %1\n\nBuilt against Poppler %2", Poppler::Version::string(), QStringLiteral(POPPLER_VERSION));
         }
     } else if (key == QLatin1String("DocumentHasPassword")) {
-        return pdfdoc->isEncrypted() ? QStringLiteral("yes") : QStringLiteral("no");
+        return documentHasPassword ? QStringLiteral("yes") : QStringLiteral("no");
     }
     return QVariant();
 }
@@ -1688,7 +1691,7 @@ bool PDFGenerator::exportTo(const QString &fileName, const Okular::ExportFormat 
             userMutex()->lock();
             std::unique_ptr<Poppler::Page> pp = pdfdoc->page(i);
             if (pp) {
-                text = pp->text(QRect()).normalized(QString::NormalizationForm_KC);
+                text = pp->text(QRect()).normalized(QString::NormalizationForm_C);
             }
             userMutex()->unlock();
             ts << text;

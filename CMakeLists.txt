@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 
 # KDE Application Version, managed by release script
 set (RELEASE_SERVICE_VERSION_MAJOR "24")
-set (RELEASE_SERVICE_VERSION_MINOR "04")
+set (RELEASE_SERVICE_VERSION_MINOR "07")
 set (RELEASE_SERVICE_VERSION_MICRO "70")
 set (RELEASE_SERVICE_VERSION "${RELEASE_SERVICE_VERSION_MAJOR}.${RELEASE_SERVICE_VERSION_MINOR}.${RELEASE_SERVICE_VERSION_MICRO}")
 
@@ -31,6 +31,7 @@ include(ECMAddTests)
 include(ECMAddAppIcon)
 include(CMakePackageConfigHelpers)
 include(ECMSetupQtPluginMacroNames)
+include(ECMAddAndroidApk)
 
 if (ANDROID AND (FORCE_NOT_REQUIRED_DEPENDENCIES STREQUAL ""))
     set(FORCE_NOT_REQUIRED_DEPENDENCIES "KF6Wallet;KF6DocTools;Qt6Qml;TIFF;LibSpectre;KExiv2Qt6;CHM;LibZip;DjVuLibre;EPub;Discount;")
@@ -146,14 +147,15 @@ else()
 endif()
 
 if (BUILD_DESKTOP)
-    find_package(Qt6DBus)
-    set_okular_optional_package_properties(Qt6DBus PROPERTIES
-        PURPOSE "Required for interprocess communication, external open in same instance and various presentation related bits.")
-    if(TARGET Qt6::DBus)
-        set(HAVE_DBUS 1)
+    if(UNIX AND NOT APPLE AND NOT ANDROID)
+        find_package(Qt6DBus)
+        set_okular_optional_package_properties(Qt6DBus PROPERTIES
+            PURPOSE "Required for interprocess communication, external open in same instance and various presentation related bits.")
+        set(HAVE_DBUS ${Qt6DBus_FOUND})
     else()
         set(HAVE_DBUS 0)
     endif()
+
     find_package(KF6 ${KF_REQUIRED_VERSION} REQUIRED COMPONENTS Parts ColorScheme Crash IconThemes ItemViews TextWidgets WidgetsAddons)
 
     find_package(KF6Purpose)

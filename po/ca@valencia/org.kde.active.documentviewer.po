@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: okular\n"
 "Report-Msgid-Bugs-To: https://bugs.kde.org\n"
-"POT-Creation-Date: 2023-12-19 01:33+0000\n"
+"POT-Creation-Date: 2024-04-08 00:37+0000\n"
 "PO-Revision-Date: 2022-09-07 18:33+0200\n"
 "Last-Translator: Josep M. Ferrer <txemaq@gmail.com>\n"
 "Language-Team: Catalan <kde-i18n-ca@kde.org>\n"
@@ -78,7 +78,7 @@ msgstr "Empremta digital SHA-256:"
 
 #: package/contents/ui/CertificateViewerDialog.qml:136
 msgid "Export..."
-msgstr "Exporta..."
+msgstr "Exporta…"
 
 #: package/contents/ui/CertificateViewerDialog.qml:142
 #: package/contents/ui/SignaturePropertiesDialog.qml:149
@@ -104,7 +104,7 @@ msgstr "Okular"
 
 #: package/contents/ui/main.qml:42
 msgid "Open..."
-msgstr "Obri..."
+msgstr "Obri…"
 
 #: package/contents/ui/main.qml:49
 msgid "About"
@@ -185,11 +185,11 @@ msgstr "Revisió %1 de %2 del document"
 
 #: package/contents/ui/SignaturePropertiesDialog.qml:115
 msgid "Save Signed Version..."
-msgstr "Guarda la versió signada..."
+msgstr "Guarda la versió signada…"
 
 #: package/contents/ui/SignaturePropertiesDialog.qml:129
 msgid "View Certificate..."
-msgstr "Visualitza el certificat..."
+msgstr "Visualitza el certificat…"
 
 #: package/contents/ui/SignaturePropertiesDialog.qml:171
 msgid "Could not save the signature."
@@ -199,6 +199,6 @@ msgstr "No s'ha pogut guardar la signatura."
 msgid "Not Available"
 msgstr "No disponible"
 
-#: package/contents/ui/ThumbnailsBase.qml:43
+#: package/contents/ui/ThumbnailsBase.qml:42
 msgid "No results found."
 msgstr "No s'ha trobat cap resultat."

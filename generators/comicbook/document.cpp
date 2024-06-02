@@ -48,6 +48,7 @@ Document::Document()
     : mDirectory(nullptr)
     , mUnrar(nullptr)
     , mArchive(nullptr)
+    , mArchiveDir(nullptr)
 {
 }
 
@@ -80,7 +81,7 @@ bool Document::open(const QString &fileName)
         if (!processArchive()) {
             return false;
         }
-#ifdef WITH_K7ZIP
+#if WITH_K7ZIP
         /**
          * We have a 7z archive
          */

@@ -14,11 +14,6 @@
 #include "annotationmodel.h"
 #include "gui/debug_ui.h"
 
-static quint32 mixIndex(int row, int column)
-{
-    return (row << 4) | column;
-}
-
 PageFilterProxyModel::PageFilterProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
     , mGroupByCurrentPage(false)
@@ -137,8 +132,9 @@ QModelIndex PageGroupProxyModel::index(int row, int column, const QModelIndex &p
             }
         }
     } else {
-        if (row < mIndexes.count()) {
-            return createIndex(row, column, mixIndex(parentIndex.row(), parentIndex.column()));
+        // We have only top-level items
+        if (!parentIndex.isValid() && row < mIndexes.count()) {
+            return createIndex(row, column);
         } else {
             return QModelIndex();
         }
@@ -210,28 +206,34 @@ QModelIndex PageGroupProxyModel::mapToSource(const QModelIndex &proxyIndex) cons
 void PageGroupProxyModel::setSourceModel(QAbstractItemModel *model)
 {
     if (sourceModel()) {
-        disconnect(sourceModel(), &QAbstractItemModel::layoutChanged, this, &PageGroupProxyModel::rebuildIndexes);
-        disconnect(sourceModel(), &QAbstractItemModel::modelReset, this, &PageGroupProxyModel::rebuildIndexes);
-        disconnect(sourceModel(), &QAbstractItemModel::rowsInserted, this, &PageGroupProxyModel::rebuildIndexes);
-        disconnect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &PageGroupProxyModel::rebuildIndexes);
+        disconnect(sourceModel(), &QAbstractItemModel::layoutAboutToBeChanged, this, &PageGroupProxyModel::aboutToRebuild);
+        disconnect(sourceModel(), &QAbstractItemModel::layoutChanged, this, &PageGroupProxyModel::rebuild);
+        disconnect(sourceModel(), &QAbstractItemModel::modelAboutToBeReset, this, &PageGroupProxyModel::aboutToRebuild);
+        disconnect(sourceModel(), &QAbstractItemModel::modelReset, this, &PageGroupProxyModel::rebuild);
+        disconnect(sourceModel(), &QAbstractItemModel::rowsAboutToBeInserted, this, &PageGroupProxyModel::aboutToRebuild);
+        disconnect(sourceModel(), &QAbstractItemModel::rowsInserted, this, &PageGroupProxyModel::rebuild);
+        disconnect(sourceModel(), &QAbstractItemModel::rowsAboutToBeRemoved, this, &PageGroupProxyModel::aboutToRebuild);
+        disconnect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &PageGroupProxyModel::rebuild);
         disconnect(sourceModel(), &QAbstractItemModel::dataChanged, this, &PageGroupProxyModel::sourceDataChanged);
     }
 
     QAbstractProxyModel::setSourceModel(model);
 
-    connect(sourceModel(), &QAbstractItemModel::layoutChanged, this, &PageGroupProxyModel::rebuildIndexes);
-    connect(sourceModel(), &QAbstractItemModel::modelReset, this, &PageGroupProxyModel::rebuildIndexes);
-    connect(sourceModel(), &QAbstractItemModel::rowsInserted, this, &PageGroupProxyModel::rebuildIndexes);
-    connect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &PageGroupProxyModel::rebuildIndexes);
+    connect(sourceModel(), &QAbstractItemModel::layoutAboutToBeChanged, this, &PageGroupProxyModel::aboutToRebuild);
+    connect(sourceModel(), &QAbstractItemModel::layoutChanged, this, &PageGroupProxyModel::rebuild);
+    connect(sourceModel(), &QAbstractItemModel::modelAboutToBeReset, this, &PageGroupProxyModel::aboutToRebuild);
+    connect(sourceModel(), &QAbstractItemModel::modelReset, this, &PageGroupProxyModel::rebuild);
+    connect(sourceModel(), &QAbstractItemModel::rowsAboutToBeInserted, this, &PageGroupProxyModel::aboutToRebuild);
+    connect(sourceModel(), &QAbstractItemModel::rowsInserted, this, &PageGroupProxyModel::rebuild);
+    connect(sourceModel(), &QAbstractItemModel::rowsAboutToBeRemoved, this, &PageGroupProxyModel::aboutToRebuild);
+    connect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &PageGroupProxyModel::rebuild);
     connect(sourceModel(), &QAbstractItemModel::dataChanged, this, &PageGroupProxyModel::sourceDataChanged);
 
     rebuildIndexes();
 }
 
-void PageGroupProxyModel::rebuildIndexes()
+void PageGroupProxyModel::doRebuildIndexes()
 {
-    beginResetModel();
-
     if (mGroupByPage) {
         mTreeIndexes.clear();
 
@@ -248,6 +250,7 @@ void PageGroupProxyModel::rebuildIndexes()
     } else {
         mIndexes.clear();
 
+        // Flatten the source model
         for (int row = 0; row < sourceModel()->rowCount(); ++row) {
             const QModelIndex pageIndex = sourceModel()->index(row, 0);
             for (int subRow = 0; subRow < sourceModel()->rowCount(pageIndex); ++subRow) {
@@ -255,8 +258,23 @@ void PageGroupProxyModel::rebuildIndexes()
             }
         }
     }
+}
 
+void PageGroupProxyModel::aboutToRebuild()
+{
+    beginResetModel();
+}
+
+void PageGroupProxyModel::rebuild()
+{
+    doRebuildIndexes();
     endResetModel();
+}
+
+void PageGroupProxyModel::rebuildIndexes()
+{
+    aboutToRebuild();
+    rebuild();
 }
 
 void PageGroupProxyModel::sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles)
@@ -485,19 +503,27 @@ QModelIndex AuthorGroupProxyModel::mapToSource(const QModelIndex &proxyIndex) co
 void AuthorGroupProxyModel::setSourceModel(QAbstractItemModel *model)
 {
     if (sourceModel()) {
-        disconnect(sourceModel(), &QAbstractItemModel::layoutChanged, this, &AuthorGroupProxyModel::rebuildIndexes);
-        disconnect(sourceModel(), &QAbstractItemModel::modelReset, this, &AuthorGroupProxyModel::rebuildIndexes);
-        disconnect(sourceModel(), &QAbstractItemModel::rowsInserted, this, &AuthorGroupProxyModel::rebuildIndexes);
-        disconnect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &AuthorGroupProxyModel::rebuildIndexes);
+        disconnect(sourceModel(), &QAbstractItemModel::layoutAboutToBeChanged, this, &AuthorGroupProxyModel::aboutToRebuild);
+        disconnect(sourceModel(), &QAbstractItemModel::layoutChanged, this, &AuthorGroupProxyModel::rebuild);
+        disconnect(sourceModel(), &QAbstractItemModel::modelAboutToBeReset, this, &AuthorGroupProxyModel::aboutToRebuild);
+        disconnect(sourceModel(), &QAbstractItemModel::modelReset, this, &AuthorGroupProxyModel::rebuild);
+        disconnect(sourceModel(), &QAbstractItemModel::rowsAboutToBeInserted, this, &AuthorGroupProxyModel::aboutToRebuild);
+        disconnect(sourceModel(), &QAbstractItemModel::rowsInserted, this, &AuthorGroupProxyModel::rebuild);
+        disconnect(sourceModel(), &QAbstractItemModel::rowsAboutToBeRemoved, this, &AuthorGroupProxyModel::aboutToRebuild);
+        disconnect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &AuthorGroupProxyModel::rebuild);
         disconnect(sourceModel(), &QAbstractItemModel::dataChanged, this, &AuthorGroupProxyModel::sourceDataChanged);
     }
 
     QAbstractProxyModel::setSourceModel(model);
 
-    connect(sourceModel(), &QAbstractItemModel::layoutChanged, this, &AuthorGroupProxyModel::rebuildIndexes);
-    connect(sourceModel(), &QAbstractItemModel::modelReset, this, &AuthorGroupProxyModel::rebuildIndexes);
-    connect(sourceModel(), &QAbstractItemModel::rowsInserted, this, &AuthorGroupProxyModel::rebuildIndexes);
-    connect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &AuthorGroupProxyModel::rebuildIndexes);
+    connect(sourceModel(), &QAbstractItemModel::layoutAboutToBeChanged, this, &AuthorGroupProxyModel::aboutToRebuild);
+    connect(sourceModel(), &QAbstractItemModel::layoutChanged, this, &AuthorGroupProxyModel::rebuild);
+    connect(sourceModel(), &QAbstractItemModel::modelAboutToBeReset, this, &AuthorGroupProxyModel::aboutToRebuild);
+    connect(sourceModel(), &QAbstractItemModel::modelReset, this, &AuthorGroupProxyModel::rebuild);
+    connect(sourceModel(), &QAbstractItemModel::rowsAboutToBeInserted, this, &AuthorGroupProxyModel::aboutToRebuild);
+    connect(sourceModel(), &QAbstractItemModel::rowsInserted, this, &AuthorGroupProxyModel::rebuild);
+    connect(sourceModel(), &QAbstractItemModel::rowsAboutToBeRemoved, this, &AuthorGroupProxyModel::aboutToRebuild);
+    connect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &AuthorGroupProxyModel::rebuild);
     connect(sourceModel(), &QAbstractItemModel::dataChanged, this, &AuthorGroupProxyModel::sourceDataChanged);
 
     rebuildIndexes();
@@ -576,9 +602,8 @@ void AuthorGroupProxyModel::groupByAuthor(bool value)
     rebuildIndexes();
 }
 
-void AuthorGroupProxyModel::rebuildIndexes()
+void AuthorGroupProxyModel::doRebuildIndexes()
 {
-    beginResetModel();
     delete d->mRoot;
     d->mRoot = new AuthorGroupItem(nullptr);
 
@@ -656,8 +681,23 @@ void AuthorGroupProxyModel::rebuildIndexes()
             }
         }
     }
+}
 
+void AuthorGroupProxyModel::aboutToRebuild()
+{
+    beginResetModel();
+}
+
+void AuthorGroupProxyModel::rebuild()
+{
+    doRebuildIndexes();
     endResetModel();
+}
+
+void AuthorGroupProxyModel::rebuildIndexes()
+{
+    aboutToRebuild();
+    rebuild();
 }
 
 void AuthorGroupProxyModel::sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles)

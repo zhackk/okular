@@ -180,14 +180,10 @@ void AnnotationModelPrivate::notifyPageChanged(int page, int flags)
         annItem->parent = root;
         q->beginInsertRows(indexForItem(root), i, i);
         annItem->parent->children.insert(i, annItem);
-        q->endInsertRows();
-        int newid = 0;
         for (Okular::Annotation *annot : annots) {
-            q->beginInsertRows(indexForItem(annItem), newid, newid);
             new AnnItem(annItem, annot);
-            q->endInsertRows();
-            ++newid;
         }
+        q->endInsertRows();
         return;
     }
     // case 3: existing branch, less annotations than items
@@ -256,7 +252,6 @@ void AnnotationModelPrivate::rebuildTree(const QVector<Okular::Page *> &pages)
         return;
     }
 
-    Q_EMIT q->layoutAboutToBeChanged();
     for (int i = 0; i < pages.count(); ++i) {
         const QList<Okular::Annotation *> annots = filterOutWidgetAnnotations(pages.at(i)->annotations());
         if (annots.isEmpty()) {
@@ -268,7 +263,6 @@ void AnnotationModelPrivate::rebuildTree(const QVector<Okular::Page *> &pages)
             new AnnItem(annItem, annot);
         }
     }
-    Q_EMIT q->layoutChanged();
 }
 
 AnnItem *AnnotationModelPrivate::findItem(int page, int *index) const

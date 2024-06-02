@@ -6,6 +6,7 @@
   <project_license>GPL-2.0+ and GFDL-1.3</project_license>
   <name>EPub</name>
   <name xml:lang="ar">EPub</name>
+  <name xml:lang="ast">EPub</name>
   <name xml:lang="az">EPub</name>
   <name xml:lang="be">EPub</name>
   <name xml:lang="bg">EPub</name>
@@ -20,7 +21,7 @@
   <name xml:lang="et">EPub</name>
   <name xml:lang="eu">EPub</name>
   <name xml:lang="fi">EPub</name>
-  <name xml:lang="fr">EPub</name>
+  <name xml:lang="fr">ePub</name>
   <name xml:lang="gl">EPub</name>
   <name xml:lang="he">EPub</name>
   <name xml:lang="hi">ईपब</name>
@@ -71,7 +72,7 @@
   <summary xml:lang="et">E-raamatute lugemise toetus</summary>
   <summary xml:lang="eu">E-Liburuak irakurtzeko euskarria gehitzen du</summary>
   <summary xml:lang="fi">Lisää e-kirjojen lukutuen</summary>
-  <summary xml:lang="fr">Permet la lecture des E-Books</summary>
+  <summary xml:lang="fr">Permet la lecture des livres électroniques (eBooks)</summary>
   <summary xml:lang="gl">Engade a posibilidade de ler libros electrónicos.</summary>
   <summary xml:lang="he">מוסיף תמיכה בקריאת ספרים אלקטרוניים (E-Books)</summary>
   <summary xml:lang="hi">ई-पुस्तक पढ़ने के लिए समर्थन जोड़ता है</summary>
@@ -111,9 +112,10 @@
   </provides>
   <url type="homepage">https://okular.kde.org</url>
   <releases>
+    <release version="24.05.0" date="2024-05-23"/>
+    <release version="24.02.2" date="2024-04-11"/>
     <release version="24.02.1" date="2024-03-21"/>
     <release version="24.02.0" date="2024-02-28"/>
     <release version="23.08.5" date="2024-02-15"/>
-    <release version="23.08.4" date="2023-12-07"/>
   </releases>
 </component>

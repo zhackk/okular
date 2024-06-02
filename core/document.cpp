@@ -2503,7 +2503,6 @@ Document::OpenResult Document::openDocument(const QString &docFile, const QUrl &
         p->d->m_doc = d;
     }
 
-    d->m_metadataLoadingCompleted = false;
     d->m_docdataMigrationNeeded = false;
 
     // 2. load Additional Data (bookmarks, local annotations and metadata) about the document
@@ -2519,7 +2518,6 @@ Document::OpenResult Document::openDocument(const QString &docFile, const QUrl &
         d->loadDocumentInfo(LoadGeneralInfo);
     }
 
-    d->m_metadataLoadingCompleted = true;
     d->m_bookmarkManager->setUrl(d->m_url);
 
     // 3. setup observers internal lists and data
@@ -4381,7 +4379,7 @@ QString DocumentPrivate::diff(const QString &oldVal, const QString &newVal)
     return {};
 }
 
-void Document::processKeystrokeAction(const Action *action, Okular::FormFieldText *fft, const QVariant &newValue)
+void Document::processKeystrokeAction(const Action *action, Okular::FormFieldText *fft, const QVariant &newValue, int prevCursorPos, int prevAnchorPos)
 {
     if (action->actionType() != Action::Script) {
         qCDebug(OkularCoreDebug) << "Unsupported action type" << action->actionType() << "for keystroke.";
@@ -4397,6 +4395,16 @@ void Document::processKeystrokeAction(const Action *action, Okular::FormFieldTex
 
     std::shared_ptr<Event> event = Event::createKeystrokeEvent(fft, d->m_pagesVector[foundPage]);
     event->setChange(DocumentPrivate::diff(fft->text(), newValue.toString()));
+    int selStart;
+    if (fft->text().size() - newValue.toString().size() == 1 && prevCursorPos == prevAnchorPos) {
+        // consider a one character removal as selection of that character and then its removal.
+        selStart = prevCursorPos - 1;
+    } else {
+        selStart = std::min(prevCursorPos, prevAnchorPos);
+    }
+    int selEnd = std::max(prevCursorPos, prevAnchorPos);
+    event->setSelStart(selStart);
+    event->setSelEnd(selEnd);
 
     const ScriptAction *linkscript = static_cast<const ScriptAction *>(action);
 
@@ -4407,6 +4415,12 @@ void Document::processKeystrokeAction(const Action *action, Okular::FormFieldTex
     } else {
         Q_EMIT refreshFormWidget(fft);
     }
+}
+
+void Document::processKeystrokeAction(const Action *action, Okular::FormFieldText *fft, const QVariant &newValue)
+{
+    // use -1 as default
+    processKeystrokeAction(action, fft, newValue, -1, -1);
 }
 
 void Document::processKeystrokeCommitAction(const Action *action, Okular::FormFieldText *fft)
